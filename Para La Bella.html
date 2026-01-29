@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mensaje para ti</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #fce4ec;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  #container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+  }
+  #message {
+    font-size: 20px;
+    margin-bottom: 25px;
+    min-height: 70px;
+    white-space: pre-wrap;
+    transition: color 0.5s;
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+  }
+  .sim { background-color: #ff4081; color: #fff; }
+  .nao { background-color: #ccc; color: #000; }
+  .heart {
+    position: absolute;
+    font-size: 24px;
+    animation: floatUp 2s linear forwards;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-120px); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <div id="message"></div>
+  <div id="buttons">
+    <button id="nextBtn" class="sim">Siguiente</button>
+  </div>
+</div>
+
+<script>
+// ---- Mensagens e cores ----
+const messages = [
+  "Hola.",
+  "Sé que el campeonato está cerca y que tienes la cabeza llena de cosas.",
+  "Solo quiero que recuerdes algo: no estás sola.",
+  "Puedes contar conmigo en cualquier momento.",
+  "Me haces sonreír y me gustas mucho 😉\n¿Me das un beso?"
+];
+const colors = ["#ff4081", "#ff80ab", "#f48fb1", "#f06292", "#ec407a"];
+
+let index = 0;
+const messageDiv = document.getElementById("message");
+const buttonsDiv = document.getElementById("buttons");
+
+// ---- Som embutido em base64 ----
+// Pequeno ding curto
+const dingSound = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
+dingSound.volume = 0.3;
+
+// ---- Função digitar ----
+function typeMessage(text, callback) {
+  messageDiv.textContent = "";
+  messageDiv.style.color = colors[index];
+  let i = 0;
+  const interval = setInterval(() => {
+    messageDiv.textContent += text[i];
+    i++;
+    if(i >= text.length) {
+      clearInterval(interval);
+      if(callback) callback();
+    }
+  }, 30);
+  dingSound.currentTime = 0;
+  dingSound.play().catch(()=>{}); // evita erro se navegador bloquear autoplay
+}
+
+// ---- Função corações ----
+function createHeart() {
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.textContent = "💖";
+  heart.style.left = Math.random() * 90 + "%";
+  heart.style.fontSize = (16 + Math.random()*20) + "px";
+  document.getElementById("container").appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+}
+
+// ---- Mostrar primeira mensagem ----
+typeMessage(messages[index]);
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+  if(index < messages.length - 1) {
+    index++;
+    typeMessage(messages[index], () => {
+      if(index === messages.length - 1) {
+        buttonsDiv.innerHTML = `
+          <button class="sim" id="yesBtn">Sí</button>
+          <button class="nao" id="noBtn">No</button>
+        `;
+        document.getElementById("yesBtn").addEventListener("click", () => {
+          typeMessage("¡YAY! :D Un beso gigante para ti!", () => {
+            for(let i=0;i<30;i++) setTimeout(createHeart, i*100);
+          });
+          buttonsDiv.innerHTML = "";
+        });
+        document.getElementById("noBtn").addEventListener("click", () => {
+          typeMessage("Oh… Todo bien, igual me haces sonreír :)", () => {
+            for(let i=0;i<15;i++) setTimeout(createHeart, i*150);
+          });
+          buttonsDiv.innerHTML = "";
+        });
+      }
+    });
+  }
+});
+</script>
+
+</body>
+</html>
